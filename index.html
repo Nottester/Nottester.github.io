@@ -1,113 +1,108 @@
-<!DOCTYPE html>
 <html>
   <head>
-    <title>Acesister's Cool Drawing Pad</title>
+    <title>Acesister's Drawing Pad</title>
     <style>
-      body {
-        background-color: lightcoral;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        height: 100vh;
-      }
-      
-      /* Style the header */
-      h1 {
-        text-align: center;
-        color: darkred;
-        font-family: sans-serif;
-        margin-bottom: 50px;
-      }
-      
       #canvas {
         border: 1px solid black;
         background-color: white;
       }
-      
-      #controls {
+      body {
         display: flex;
+        flex-direction: column;
         align-items: center;
-        justify-content: center;
-        margin-top: 50px;
+        height: 100vh;
       }
-      
-      .control {
-        display: inline-block;
-        margin: 0 10px;
+      header {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        background-color: lightblue;
+        font-size: 36px;
+        padding: 20px;
+      }
+      .controls {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-top: 20px;
+      }
+      .controls input[type="color"],
+      .controls input[type="range"] {
+        width: 150px;
+        margin-bottom: 10px;
       }
     </style>
   </head>
   <body>
-    <h1>Acesister's Cool Drawing Pad</h1>
+    <header>Acesister's Drawing Pad</header>
     <canvas id="canvas" width="500" height="500"></canvas>
-    <div id="controls">
-      <div class="control">
-        <label for="color">Color:</label>
-        <input type="color" id="color" value="#000000">
-      </div>
-      <div class="control">
-        <label for="size">Size:</label>
-        <input type="range" id="size" min="1" max="50" value="5">
-      </div>
-      <div class="control">
-        <label for="erase">Erase:</label>
-        <input type="checkbox" id="erase">
-      </div>
+    <div class="controls">
+      <input type="color" id="color" value="#000000" />
+      <button id="erase">Erase</button>
+      <input type="range" id="size" min="1" max="10" value="5" />
     </div>
-    <script>
-let isPainting = false;
-let canvas = document.getElementById("canvas");
-let ctx = canvas.getContext("2d");
-let color = document.getElementById("color");
-let size = document.getElementById("size");
+  </body>
+  <script>
+  let erase = document.getElementById("erase");
+  let canvas = document.getElementById("canvas");
+  let ctx = canvas.getContext("2d");
+  let color = document.getElementById("color");
+  let size = document.getElementById("size");
+  let isPainting = false;
+  let lastX = 0;
+  let lastY = 0;
+  let isErasing = false;
 
-let lastX = 0;
-let lastY = 0;
+  canvas.addEventListener("mousedown", startPainting);
+  canvas.addEventListener("mouseup", stopPainting);
+  canvas.addEventListener("mouseout", stopPainting);
+  canvas.addEventListener("mousemove", draw);
+  window.addEventListener("resize", resizeCanvas);
 
-canvas.addEventListener("mousedown", startPainting);
-canvas.addEventListener("mouseup", stopPainting);
-canvas.addEventListener("mouseout", stopPainting);
-canvas.addEventListener("mousemove", draw);
+  function resizeCanvas() {
+    canvas.width = window.innerWidth * 0.75;
+    canvas.height = window.innerHeight * 0.75;
+  }
+  resizeCanvas();
 
-color.addEventListener("input", function() {
-  ctx.strokeStyle = color.value;
-});
+  function startPainting(e) {
+    isPainting = true;
+    let canvasRect = canvas.getBoundingClientRect();
+    lastX = e.clientX - canvasRect.left;
+    lastY = e.clientY - canvasRect.top;
+  }
 
-size.addEventListener("input", function() {
-  ctx.lineWidth = size.value;
-});
+  function stopPainting(e) {
+    isPainting = false;
+    lastX = 0;
+    lastY = 0;
+  }
 
-document.addEventListener("keydown", function(e) {
-  if (e.code === "KeyE") {
-    isPainting = !isPainting;
-    ctx.strokeStyle = color.value;
+  function draw(e) {
+    if (!isPainting) return;
+    let canvasRect = canvas.getBoundingClientRect();
+    let x = e.clientX - canvasRect.left;
+    let y = e.clientY - canvasRect.top;
+    ctx.beginPath();
+    ctx.strokeStyle = isErasing ? "white" : color.value;
     ctx.lineWidth = size.value;
-  }
-});
-
-function startPainting(e) {
-  isPainting = true;
-  lastX = e.clientX;
-  lastY = e.clientY;
-}
-
-function stopPainting() {
-  isPainting = false;
-}
-
-function draw(e) {
-  if (!isPainting) {
-    return;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.moveTo(lastX, lastY);
+    ctx.lineTo(x, y);
+    ctx.stroke();
+    lastX = x;
+    lastY = y;
   }
 
-  ctx.beginPath();
-  ctx.moveTo(lastX, lastY);
-  ctx.lineTo(e.clientX, e.clientY);
-  ctx.stroke();
-  lastX = e.clientX;
-  lastY = e.clientY;
-}
-
+  erase.addEventListener("click", function() {
+    isErasing = !isErasing;
+    if (isErasing) {
+      erase.innerHTML = "Draw";
+    } else {
+      erase.innerHTML = "Erase";
+    }
+  });
 </script>
-</body>
 </html>
