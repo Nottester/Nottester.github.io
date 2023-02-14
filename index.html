@@ -58,13 +58,6 @@
   canvas.addEventListener("mouseup", stopPainting);
   canvas.addEventListener("mouseout", stopPainting);
   canvas.addEventListener("mousemove", draw);
-  window.addEventListener("resize", resizeCanvas);
-
-  function resizeCanvas() {
-    canvas.width = window.innerWidth * 0.75;
-    canvas.height = window.innerHeight * 0.75;
-  }
-  resizeCanvas();
 
   function startPainting(e) {
     isPainting = true;
@@ -94,15 +87,35 @@
     ctx.stroke();
     lastX = x;
     lastY = y;
-  }
+}
+function resizeCanvas() {
+    let oldCanvas = document.createElement("canvas");
+    oldCanvas.width = canvas.width;
+    oldCanvas.height = canvas.height;
+    oldCanvas.getContext("2d").drawImage(canvas, 0, 0);
 
-  erase.addEventListener("click", function() {
-    isErasing = !isErasing;
-    if (isErasing) {
-      erase.innerHTML = "Draw";
-    } else {
-      erase.innerHTML = "Erase";
-    }
-  });
+    canvas.width = window.innerWidth * 0.75;
+    canvas.height = window.innerHeight * 0.75;
+
+    ctx.drawImage(oldCanvas, 0, 0);
+}
+function saveImage() {
+  image.src = canvas.toDataURL();
+}
+
+function restoreImage() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(image, 0, 0);
+}
+
+window.addEventListener("resize", function() {
+  saveImage();
+  resizeCanvas();
+  restoreImage();
+});
+
+canvas.addEventListener("mousedown", function() {
+  saveImage();
+})
 </script>
 </html>
